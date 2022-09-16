@@ -1,0 +1,3 @@
+interface IOfflineConfig {
+  apiVersion: number;
+}

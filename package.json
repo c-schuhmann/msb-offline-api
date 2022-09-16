@@ -1,0 +1,25 @@
+{
+  "name": "@mobisysgmbh/msb-offline-api",
+  "version": "2.0.0",
+  "description": "MSB App - Offline API Contract package",
+  "types": "./def/OfflineApi.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MobisysGmbH/msb-offline-api.git"
+  },
+  "keywords": [
+    "MSB",
+    "Mobisys",
+    "MSB App",
+    "Mobisys GmbH",
+    "Mobile Informationssysteme",
+    "Mobisys Solution Builder",
+    "MSB Offline"
+  ],
+  "author": "Mobisys GmbH <info@mobisys.de>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MobisysGmbH/msb-offline-api/issues"
+  },
+  "homepage": "https://github.com/MobisysGmbH/msb-offline-api#readme"
+}
