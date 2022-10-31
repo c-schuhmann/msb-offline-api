@@ -1,5 +1,5 @@
 type IOfflinePboMethod = (
-  request: IOfflineRequest,
+  request: Omit<IOfflineRequest, 'event' | 'eventType'>,
   response: IOfflineResponse,
   components: Record<string, IOfflineComponent>,
   values: Record<string, string>,
