@@ -1,15 +1,58 @@
-resources:
-  repositories:
-    - repository: devops
-      type: github
-      name: MobisysGmbh/devops-templates
-      endpoint: MobisysGmbH
-      ref: refs/heads/release/v1
+parameters:
+  - name: dryRun
+    type: boolean
+    displayName: Only do test run - No real publishing!
+    default: true
 
 trigger: none
 pr: none
 
-extends:
-  template: /yaml/kickstarter-templates/package-pipeline.yml@devops
-  parameters:
-    packageType: npm
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- checkout: self
+  clean: true
+
+- task: Npm@1
+  ${{ if eq(parameters.dryRun, false) }}:
+    displayName: "Publishing to https://registry.npmjs.org/"
+  ${{ else }}:
+    displayName: "(test-run) Publishing to https://registry.npmjs.org/"
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  inputs:
+    command: "custom"
+    ${{ if eq(parameters.dryRun, false) }}:
+      customCommand: "publish $(Build.SourcesDirectory) --access public"
+    ${{ else }}:
+      customCommand: "publish $(Build.SourcesDirectory) --access public --dry-run"
+    verbose: true
+    customEndpoint: "Npmjs.com Connection"
+    workingDir: $(Build.SourcesDirectory)
+
+- task: PowerShell@2
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  ${{ if eq(parameters.dryRun, false) }}:
+    displayName: Tag Sourcecode
+  ${{ else }}:
+    displayName: (test-run) Tag Sourcecode
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Get package version from package.json
+      $packageJsonFile = "$(Build.SourcesDirectory)/package.json"
+      $packageConfig = Get-Content -Path "$packageJsonFile" | ConvertFrom-Json
+      $packageVersion = $packageConfig.version
+
+      # Git tag the current source code state
+      git config user.name "AzureDevOps Agent"
+      git config user.email "team-devops@mobisys.de"
+      git tag -a "$packageVersion" $commit -m "Added by Azure Build Pipeline"
+
+      if ('${{parameters.dryRun}}' -eq 'True') {
+        Write-Host "(test-run) Did not push the tag to origin"
+      } else {
+        git push origin "$packageVersion"
+      }
+    pwsh: true
+    workingDirectory: $(Build.SourcesDirectory)
