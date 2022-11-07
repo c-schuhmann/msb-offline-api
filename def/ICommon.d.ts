@@ -85,7 +85,7 @@ interface IOfflineComponent {
   CSTYLE: string;
   CTABINDEX: string;
   CTYPE: string;
-  CVALUE: string;
+  readonly CVALUE: string;
   CVALUELIST: string;
   CVALUELTYPE: string;
   CVISLEN: string;
