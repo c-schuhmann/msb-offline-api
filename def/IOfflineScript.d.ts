@@ -1,17 +1,29 @@
+type IOfflinePboRequest = Omit<IOfflineRequest, "event" | "eventType">;
+type IOfflinePaiRequest = IOfflineRequest;
+
+type IOfflinePboComponentsMap = Record<string, IOfflineComponent>;
+type IOfflinePaiComponentsMap = Record<string, Readonly<IOfflineComponent>>;
+
+type IOfflineValuesMap = Record<string, string>;
+
+interface IOfflineCallback {
+  (error?: IMsbAppError): void;
+}
+
 type IOfflinePboMethod = (
-  request: Omit<IOfflineRequest, 'event' | 'eventType'>,
+  request: IOfflinePboRequest,
   response: IOfflineResponse,
-  components: Record<string, IOfflineComponent>,
-  values: Record<string, string>,
-  callback: (error?: IMsbAppError) => void
+  components: IOfflinePboComponentsMap,
+  values: IOfflineValuesMap,
+  callback: IOfflineCallback
 ) => void;
 
 type IOfflinePaiMethod = (
-  request: IOfflineRequest,
+  request: IOfflinePaiRequest,
   response: IOfflineResponse,
-  components: Record<string, Readonly<IOfflineComponent>>,
-  values: Record<string, string>,
-  callback: (error?: IMsbAppError) => void
+  components: IOfflinePaiComponentsMap,
+  values: IOfflineValuesMap,
+  callback: IOfflineCallback
 ) => void;
 
 interface IOfflineScript {
