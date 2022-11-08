@@ -1,3 +1,11 @@
+resources:
+  repositories:
+  - repository: devops  # arbitrary identifier (A-Z, a-z, 0-9, and underscore)
+    type: github
+    name: MobisysGmbh/devops-templates  # repository name (format depends on `type`)
+    endpoint: MobisysGmbH  # name of the service connection to use (for types that aren't Azure Repos)
+    ref: refs/heads/release/v5 # defaults to refs/heads/main if ref is not set
+
 parameters:
   - name: dryRun
     type: boolean
@@ -7,52 +15,10 @@ parameters:
 trigger: none
 pr: none
 
-pool:
-  vmImage: 'ubuntu-latest'
-
-steps:
-- checkout: self
-  clean: true
-
-- task: Npm@1
-  ${{ if eq(parameters.dryRun, false) }}:
-    displayName: "Publishing to https://registry.npmjs.org/"
-  ${{ else }}:
-    displayName: "(test-run) Publishing to https://registry.npmjs.org/"
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-  inputs:
-    command: "custom"
-    ${{ if eq(parameters.dryRun, false) }}:
-      customCommand: "publish $(Build.SourcesDirectory) --access public"
-    ${{ else }}:
-      customCommand: "publish $(Build.SourcesDirectory) --access public --dry-run"
-    verbose: true
-    customEndpoint: "Npmjs.com Connection"
-    workingDir: $(Build.SourcesDirectory)
-
-- task: PowerShell@2
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-  ${{ if eq(parameters.dryRun, false) }}:
-    displayName: Tag Sourcecode
-  ${{ else }}:
-    displayName: (test-run) Tag Sourcecode
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Get package version from package.json
-      $packageJsonFile = "$(Build.SourcesDirectory)/package.json"
-      $packageConfig = Get-Content -Path "$packageJsonFile" | ConvertFrom-Json
-      $packageVersion = $packageConfig.version
-
-      # Git tag the current source code state
-      git config user.name "AzureDevOps Agent"
-      git config user.email "team-devops@mobisys.de"
-      git tag -a "$packageVersion" $commit -m "Added by Azure Build Pipeline"
-
-      if ('${{parameters.dryRun}}' -eq 'True') {
-        Write-Host "(test-run) Did not push the tag to origin"
-      } else {
-        git push origin "$packageVersion"
-      }
-    pwsh: true
-    workingDirectory: $(Build.SourcesDirectory)
+extends:
+  template: /yaml/kickstarter-templates/publish-to-npmjs-pipeline.yml@devops
+  parameters:
+    dryRun: ${{ parameters.dryRun }}
+    publishingBranch: 'refs/heads/main'
+    applicationRootPath: $(Build.SourcesDirectory)
+    vmImage: 'ubuntu-latest'
