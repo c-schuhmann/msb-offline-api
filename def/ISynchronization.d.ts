@@ -3,4 +3,5 @@ interface ISynchronization {
   download(tableName: string, callback: (error?: IMsbAppError) => void): void;
   upload(tableName: string, callback: (error?: IMsbAppError) => void): void;
   uploadFiles(callback: (error?: IMsbAppError) => void): void;
+  downloadFiles(fileNames: string[], callback: (error?: IMsbAppError) => void): void;
 }
